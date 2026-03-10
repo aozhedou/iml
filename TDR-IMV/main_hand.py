@@ -5,7 +5,7 @@ import numpy as np
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from data import Scene, PIE, CUB, handwritten, ROSMAP, BRAC, Generate
+from data import Scene, handwritten0, ROSMAP, BRAC, Yale, YaleB, Generate,PIE, CUB
 
 from model import TDR_IMV
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
                         help='gradually increase the value of lambda from 0 to 1')
     args = parser.parse_args()
 
-    dataset = BRAC()
+    dataset = PIE()
     num_classes = dataset.num_classes
     num_views = dataset.num_views
     dims = dataset.dims

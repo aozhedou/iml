@@ -29,6 +29,14 @@ def read_mymat(path, name, sp, missrate, sparse=False):
     if 'Y' in sp:
         if (name == 'handwritten0.mat') or (name == 'BRAC.mat') or (name == 'ROSMAP.mat'):
             Y = (f['gt']).astype(np.int32)
+        elif (name == 'Scene.mat') or (name == 'YaleB.mat'):
+            Y = (f['Y']).astype(np.int32)
+            if np.min(Y) == 1:
+                Y = Y - 1
+        elif (name == 'Yale.mat'):
+            Y = (f['y']).astype(np.int32)
+            if np.min(Y) == 1:
+                Y = Y - 1
         else:
             Y = (f['gt']-1).astype(np.int32)
     else:
@@ -36,7 +44,7 @@ def read_mymat(path, name, sp, missrate, sparse=False):
 
     if 'X' in sp:
         Xa = f['X']
-        Xa = Xa.reshape(Xa.shape[1], )
+        Xa = Xa.flatten()
         X = []
         if sparse:
             for x in Xa:
@@ -47,12 +55,13 @@ def read_mymat(path, name, sp, missrate, sparse=False):
     else:
         X = None
 
-    n_sample = len(X[0][0])
+    n_sample = np.squeeze(Y).shape[0]
     n_view = len(X)
     Sn = get_sn(n_view, n_sample, missrate).astype(np.float32)
 
     for i in range(n_view):
-        X[i] = X[i].T
+        if X[i].shape[0] != n_sample:
+            X[i] = X[i].T
     return X, Y, Sn
 
 def build_ad_dataset(Y, p, seed=999):

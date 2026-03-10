@@ -46,7 +46,7 @@ class MultiViewDataset(Dataset):
         norm_x = scaler.fit_transform(x)
         return norm_x
 
-def handwritten():
+def handwritten0():
     # 1024 300
     data_path = "data/handwritten0.mat"
     data = sio.loadmat(data_path)
@@ -54,7 +54,7 @@ def handwritten():
     data_Y = data['gt']
     for v in range(len(data_X)):
         data_X[v] = data_X[v].T
-    return MultiViewDataset("handwritten", data_X, data_Y)
+    return MultiViewDataset("handwritten0", data_X, data_Y)
 
 def BRAC():
     # 1024 300
@@ -112,13 +112,30 @@ def Cal101_20():
 
     return MultiViewDataset("Cal101_20", data_X, data_Y)
 
+def Yale():
+    data_path = "data/Yale.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'].flatten()
+    data_Y = data['y']-1
+    return MultiViewDataset("Yale", data_X, data_Y)
+def YaleB():
+    data_path = "data/YaleB.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'].flatten()
+    data_Y = data['Y']-1
+    return MultiViewDataset("YaleB", data_X, data_Y)
+def Reuters():
+    data_path = "data/Reuters.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'][0]
+    data_Y = data['Y']-1
+    return MultiViewDataset("Reuters", data_X, data_Y)
+
 def Scene():
     data_path = "data/Scene.mat"
     data = sio.loadmat(data_path)
     data_X = data['X'][0]
-    data_Y = data['YCopy']
-    for v in range(len(data_X)):
-        data_X[v] = data_X[v].T
+    data_Y = data['Y']-1
     return MultiViewDataset("Scene", data_X, data_Y)
 
 def Generate():
