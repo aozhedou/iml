@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from torch.autograd import Variable
 reg_param = 1e-3
 
-def get_samples(x, y, sn, train_index, test_index, n_sample, k, if_mean=False, ):
+def get_samples(x, y, sn, train_index, test_index, n_sample, k, if_mean=False, label_mask=None):
     """
     Retrieve the set of the k nearest samples with missing data on the training dataset.
     :param x: dataset: view_num * (dataset_num, dim,)
@@ -78,6 +78,13 @@ def get_samples(x, y, sn, train_index, test_index, n_sample, k, if_mean=False, )
     y_train = np.concatenate((y_complete, y_incomplete), axis=0)
     Sn_train = np.concatenate((sn_complete, sn_incomplete), axis=0)
 
+    if label_mask is not None:
+        lm_complete = label_mask[x_train_dismiss_index]
+        lm_incomplete = np.repeat(label_mask[x_train_miss_index], n_sample, axis=0)
+        label_mask_out = np.concatenate((lm_complete, lm_incomplete), axis=0)
+    else:
+        label_mask_out = None
+
     print("Fill the missing views in the test set")
     sn_test = sn[test_index]
     x_test_dissmiss_index = np.where(np.sum(sn_test, axis=1) == view_num)[0]
@@ -128,6 +135,6 @@ def get_samples(x, y, sn, train_index, test_index, n_sample, k, if_mean=False, )
             x_test = [np.concatenate((x_test[_], x_i[_]), axis=0) for _ in range(view_num)]
             y_test = np.concatenate((y_test, y_i), axis=0)
     x_test = process_data(x_test, view_num)
-    return x_train, y_train, x_test, y_test, Sn_train
+    return x_train, y_train, x_test, y_test, Sn_train, label_mask_out
 
 

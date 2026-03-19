@@ -27,18 +27,12 @@ def read_mymat(path, name, sp, missrate, sparse=False):
     f = scio.loadmat(mat_file)
 
     if 'Y' in sp:
-        if (name == 'handwritten0.mat') or (name == 'BRAC.mat') or (name == 'ROSMAP.mat'):
-            Y = (f['gt']).astype(np.int32)
-        elif (name == 'Scene.mat') or (name == 'YaleB.mat'):
-            Y = (f['Y']).astype(np.int32)
-            if np.min(Y) == 1:
-                Y = Y - 1
-        elif (name == 'Yale.mat'):
-            Y = (f['y']).astype(np.int32)
-            if np.min(Y) == 1:
-                Y = Y - 1
-        else:
-            Y = (f['gt']-1).astype(np.int32)
+        label_key = next((k for k in ('Y', 'y', 'gt') if k in f), None)
+        if label_key is None:
+            raise KeyError(f"No label key found in {name}, available keys: {[k for k in f.keys() if not k.startswith('_')]}")
+        Y = f[label_key].astype(np.int32)
+        if np.min(Y) == 1:
+            Y = Y - 1
     else:
         Y = None
 
@@ -63,6 +57,23 @@ def read_mymat(path, name, sp, missrate, sparse=False):
         if X[i].shape[0] != n_sample:
             X[i] = X[i].T
     return X, Y, Sn
+
+def create_label_mask(Y, n_labeled_per_class, seed=42):
+    """
+    For each class, randomly select n_labeled_per_class samples as labeled.
+    Returns a bool numpy array: True = labeled, False = unlabeled.
+    Used for weak supervision experiments.
+    """
+    np.random.seed(seed)
+    Y = np.squeeze(Y)
+    mask = np.zeros(len(Y), dtype=bool)
+    for c in np.unique(Y):
+        indices = np.where(Y == c)[0]
+        n = min(n_labeled_per_class, len(indices))
+        selected = np.random.choice(indices, n, replace=False)
+        mask[selected] = True
+    return mask
+
 
 def build_ad_dataset(Y, p, seed=999):
     '''
@@ -115,19 +126,25 @@ def process_data(X, n_view):
 
 
 class partial_mv_dataset(Dataset):
-    def __init__(self, data, Sn, Y):
+    def __init__(self, data, Sn, Y, label_mask=None):
         '''
         :param data: Input data is a list of numpy arrays
+        :param label_mask: bool numpy array, True=labeled, False=unlabeled. None means all labeled.
         '''
         self.data = data
         self.Y = Y
         self.Sn = Sn
+        self.label_mask = label_mask if label_mask is not None else np.ones(len(Y), dtype=bool)
 
     def __getitem__(self, item):
         datum = [self.data[view][item][np.newaxis, :] for view in range(len(self.data))]
         Y = self.Y[item]
         Sn = self.Sn[item].reshape(1, len(self.Sn[item]))
-        return [torch.from_numpy(datum[view]) for view in range(len(self.data))], torch.from_numpy(Sn), torch.from_numpy(Y)
+        lm = np.array([self.label_mask[item]])
+        return ([torch.from_numpy(datum[view]) for view in range(len(self.data))],
+                torch.from_numpy(Sn),
+                torch.from_numpy(Y),
+                torch.from_numpy(lm))
 
     def __len__(self):
         return self.data[0].shape[0]
@@ -153,15 +170,21 @@ def partial_mv_tabular_collate(batch):
     new_batch = [[] for _ in range(len(batch[0][0]))]
     new_label = []
     new_Sn = []
+    new_lmask = []
     for y in range(len(batch)):
         cur_data = batch[y][0]
         Sn_data = batch[y][1]
         label_data = batch[y][2]
+        lmask_data = batch[y][3]
         for x in range(len(batch[0][0])):
             new_batch[x].append(cur_data[x])
         new_Sn.append(Sn_data)
         new_label.append(label_data)
-    return [torch.cat(new_batch[i], dim=0) for i in range(len(batch[0][0]))], torch.cat(new_Sn, dim=0), torch.cat(new_label, dim=0)
+        new_lmask.append(lmask_data)
+    return ([torch.cat(new_batch[i], dim=0) for i in range(len(batch[0][0]))],
+            torch.cat(new_Sn, dim=0),
+            torch.cat(new_label, dim=0),
+            torch.cat(new_lmask, dim=0))
 
 def mv_tabular_collate(batch):
     new_batch = [[] for _ in range(len(batch[0][0]))]
@@ -214,4 +237,4 @@ def Uncertainty_filter(X_test,Y_test,model,num_classes,epoch,beta,args,device=No
     X_filter_test = [view[mask] for view in X_test]
     Y_filter_test = Y_test[mask]
 
-    return X_filter_test, Y_filter_test
+    return X_filter_test, Y_filter_test, mask.numpy()

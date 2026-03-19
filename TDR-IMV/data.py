@@ -56,36 +56,6 @@ def handwritten0():
         data_X[v] = data_X[v].T
     return MultiViewDataset("handwritten0", data_X, data_Y)
 
-def BRAC():
-    # 1024 300
-    data_path = "data/BRAC.mat"
-    data = sio.loadmat(data_path)
-    data_X = data['X'][0]
-    data_Y = data['gt']
-    for v in range(len(data_X)):
-        data_X[v] = data_X[v].T
-    return MultiViewDataset("BRAC", data_X, data_Y)
-
-def ROSMAP():
-    # 1024 300
-    data_path = "data/ROSMAP.mat"
-    data = sio.loadmat(data_path)
-    data_X = data['X'][0]
-    data_Y = data['gt']
-    for v in range(len(data_X)):
-        data_X[v] = data_X[v].T
-    return MultiViewDataset("ROSMAP", data_X, data_Y)
-
-def CUB():
-    # 1024 300
-    data_path = "data/CUB.mat"
-    data = sio.loadmat(data_path)
-    data_X = data['X'][0]
-    data_Y = data['gt']
-    for v in range(len(data_X)):
-        data_X[v] = data_X[v].T
-    return MultiViewDataset("CUB", data_X, data_Y)
-
 def PIE():
     data_path = "data/PIE.mat"
     data = sio.loadmat(data_path)
@@ -95,41 +65,12 @@ def PIE():
         data_X[v] = data_X[v].T
     return MultiViewDataset("PIE", data_X, data_Y)
 
-def CNIST():
-    data_path = "data/CNIST.mat"
-    data = sio.loadmat(data_path)
-    data_X = data['X'][0]
-    data_Y = data['gt']
-    for v in range(len(data_X)):
-        data_X[v] = data_X[v].T
-    return MultiViewDataset("CNIST", data_X, data_Y)
-
-def Cal101_20():
-    data_path = "data/Caltech101-20.mat"
-    data = sio.loadmat(data_path)
-    data_X = data['X'][0]
-    data_Y = data['Y']
-
-    return MultiViewDataset("Cal101_20", data_X, data_Y)
-
-def Yale():
-    data_path = "data/Yale.mat"
-    data = sio.loadmat(data_path)
-    data_X = data['X'].flatten()
-    data_Y = data['y']-1
-    return MultiViewDataset("Yale", data_X, data_Y)
 def YaleB():
     data_path = "data/YaleB.mat"
     data = sio.loadmat(data_path)
     data_X = data['X'].flatten()
     data_Y = data['Y']-1
     return MultiViewDataset("YaleB", data_X, data_Y)
-def Reuters():
-    data_path = "data/Reuters.mat"
-    data = sio.loadmat(data_path)
-    data_X = data['X'][0]
-    data_Y = data['Y']-1
-    return MultiViewDataset("Reuters", data_X, data_Y)
 
 def Scene():
     data_path = "data/Scene.mat"
@@ -138,12 +79,58 @@ def Scene():
     data_Y = data['Y']-1
     return MultiViewDataset("Scene", data_X, data_Y)
 
-def Generate():
-    data_path = "data/matlab.mat"
+def Caltech101all():
+    data_path = "data/Caltech101-7.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'].flatten()
+    data_Y = data['y']
+    return MultiViewDataset("Caltech101-7", data_X, data_Y)
+
+def ALOI100():
+    data_path = "data/ALOI_100.mat"
     data = sio.loadmat(data_path)
     data_X = data['X'][0]
-    data_Y = data['gt']
-    for v in range(len(data_X)):
-        data_X[v] = data_X[v].T
-    return MultiViewDataset("matlab", data_X, data_Y)
+    data_Y = data['Y']-1
+    return MultiViewDataset("ALOI_100", data_X, data_Y)
 
+def leaves100():
+    data_path = "data/100leaves.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'][0]
+    data_Y = data['Y']-1
+    return MultiViewDataset("100leaves", data_X, data_Y)
+
+def sources3():
+    data_path = "data/3sources.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'][0]
+    data_Y = data['Y']-1
+    return MultiViewDataset("3sources", data_X, data_Y)
+
+def MNIST10k():
+    data_path = "data/MNIST-10k.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'].flatten()
+    data_Y = data['y']
+    return MultiViewDataset("MNIST-10k", data_X, data_Y)
+
+def Cora():
+    data_path = "data/Cora.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'].flatten()
+    data_Y = data['y']
+    return MultiViewDataset("Cora", data_X, data_Y)
+
+def Reuters1200():
+    data_path = "data/Reuters-1200.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'].flatten()
+    data_Y = data['y']
+    return MultiViewDataset("Reuters-1200", data_X, data_Y)
+
+def Wikipedia():
+    data_path = "data/Wikipedia.mat"
+    data = sio.loadmat(data_path)
+    data_X = data['X'].flatten()
+    data_Y = data['y']
+    return MultiViewDataset("Wikipedia", data_X, data_Y)
